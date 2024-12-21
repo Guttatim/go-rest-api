@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
-	"log"
+	"go-rest-api/internal/infra/logger"
 	"net/http"
 )
 
@@ -26,7 +26,7 @@ func Success(w http.ResponseWriter, data interface{}) {
 
 	err := json.NewEncoder(w).Encode(data)
 	if err != nil {
-		log.Println(err)
+		logger.Logger.Error(err)
 	}
 }
 
@@ -36,7 +36,7 @@ func Created(w http.ResponseWriter, body interface{}) {
 
 	err := json.NewEncoder(w).Encode(body)
 	if err != nil {
-		log.Print(err)
+		logger.Logger.Error(err)
 	}
 }
 
@@ -71,6 +71,6 @@ func Unauthorized(w http.ResponseWriter, err error) {
 func encodeErrorData(w http.ResponseWriter, err error) {
 	e := json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 	if e != nil {
-		log.Print(e)
+		logger.Logger.Error(err)
 	}
 }

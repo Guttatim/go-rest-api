@@ -5,11 +5,11 @@ services:
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: restapi_dev
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "${DB_PORT_EXTERNAL}:${DB_PORT}"
 
   app:
     build:
@@ -19,27 +19,19 @@ services:
     ports:
       - "8081:8080"
     environment:
-      DB_HOST: db
+      DB_NAME: ${DB_NAME}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: restapi_dev
-      DB_PORT: 5432
+      MIGRATE: ${MIGRATE}
+      MIGRATION_LOCATION: ${MIGRATION_LOCATION}
+      LOGGER_LEVEL: ${LOGGER_LEVEL}
+      CLOUDINARY_NAME_KEY: ${CLOUDINARY_NAME_KEY}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_SECRET_KEY: ${CLOUDINARY_SECRET_KEY}
     volumes:
       - .:/app
-    depends_on:
-      - db
-
-  migrate:
-    image: migrate/migrate
-    container_name: migration_service
-    entrypoint: [
-      "migrate",
-      "-path", "/migrations",
-      "-database", "postgres://${DB_USER}:${DB_PASSWORD}@db:5432/restapi_dev?sslmode=disable",
-      "up"
-    ]
-    volumes:
-      - ./migrations:/migrations
     depends_on:
       - db
 

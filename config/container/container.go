@@ -1,13 +1,15 @@
 package container
 
 import (
-	"github.com/go-chi/jwtauth/v5"
+	"go-rest-api/config"
 	"go-rest-api/internal/app"
 	"go-rest-api/internal/infra/database"
 	"go-rest-api/internal/infra/database/repositories"
 	"go-rest-api/internal/infra/http/controllers"
 	"go-rest-api/internal/infra/http/middlewares"
 	"net/http"
+
+	"github.com/go-chi/jwtauth/v5"
 )
 
 type Container struct {
@@ -31,8 +33,12 @@ type Middleware struct {
 }
 
 func New() Container {
-	tknAuth := jwtauth.New("HS256", []byte("1234567890"), nil)
-	db := database.New()
+	cfg := config.GetConfiguration()
+	tknAuth := jwtauth.New("HS256", []byte(cfg.JwtSecret), nil)
+	db := database.New(cfg)
+
+	// cloudinaryService := filesystem.NewCloudinaryService(cfg)
+	// imageService := filesystem.NewImageStorageService("file_storage")
 
 	userRepo := repositories.NewUserRepository(db)
 	sessionRepo := repositories.NewSessionRepository(db)

@@ -3,36 +3,44 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"go-rest-api/config"
+	"go-rest-api/internal/infra/logger"
+
 	_ "github.com/lib/pq"
-	"os"
 )
 
-func New() *sql.DB {
-	db, err := newDatabase()
+type databaseManager struct {
+	cfg config.Configuration
+}
+
+func New(cfg config.Configuration) *sql.DB {
+	dbManager := databaseManager{
+		cfg: cfg,
+	}
+
+	db, err := dbManager.newDatabase()
 	if err != nil {
+		logger.Logger.Panic(err)
 		panic(err)
 	}
 	return db
 }
 
-func newDatabase() (*sql.DB, error) {
-	db, err := sql.Open("postgres", getConnectionString())
+func (dm databaseManager) newDatabase() (*sql.DB, error) {
+	db, err := sql.Open("postgres", dm.getConnectionString())
 	if err != nil {
+		logger.Logger.Error(err)
 		return nil, err
 	}
 	if err = db.Ping(); err != nil {
+		logger.Logger.Error(err)
 		return nil, err
 	}
 	return db, nil
 }
 
-func getConnectionString() string {
-	dbHost := os.Getenv("DB_HOST")
-	dbUser := os.Getenv("DB_USER")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-	dbPort := os.Getenv("DB_PORT")
-	connectingStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", dbHost, dbPort, dbUser, dbPassword, dbName)
-
+func (dm databaseManager) getConnectionString() string {
+	connectingStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		dm.cfg.DatabaseHost, dm.cfg.DatabasePort, dm.cfg.DatabaseUser, dm.cfg.DatabasePassword, dm.cfg.DatabaseName)
 	return connectingStr
 }

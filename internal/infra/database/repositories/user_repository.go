@@ -3,6 +3,7 @@ package repositories
 import (
 	"database/sql"
 	"go-rest-api/internal/domain"
+	"go-rest-api/internal/infra/logger"
 )
 
 type user struct {
@@ -22,8 +23,10 @@ type userRepository struct {
 	db *sql.DB
 }
 
-func NewUserRepository(database *sql.DB) UserRepository {
-	return &userRepository{db: database}
+func NewUserRepository(db *sql.DB) UserRepository {
+	return &userRepository{
+		db: db,
+	}
 }
 
 func (ur userRepository) FindByEmail(email string) (domain.User, error) {
@@ -32,6 +35,7 @@ func (ur userRepository) FindByEmail(email string) (domain.User, error) {
 
 	err := ur.db.QueryRow(sqlCommand, email).Scan(&userModel.Id, &userModel.Name, &userModel.Email, &userModel.Password)
 	if err != nil {
+		logger.Logger.Error(err)
 		return domain.User{}, err
 	}
 
@@ -43,6 +47,7 @@ func (ur userRepository) FindById(id uint64) (domain.User, error) {
 	sqlCommand := `SELECT * FROM users WHERE id=$1`
 	err := ur.db.QueryRow(sqlCommand, id).Scan(&userModel.Id, &userModel.Name, &userModel.Email, &userModel.Password)
 	if err != nil {
+		logger.Logger.Error(err)
 		return domain.User{}, err
 	}
 
@@ -55,6 +60,7 @@ func (ur userRepository) Save(user domain.User) (domain.User, error) {
 
 	err := ur.db.QueryRow(sqlCommand, userModel.Name, userModel.Email, userModel.Password).Scan(&userModel.Id)
 	if err != nil {
+		logger.Logger.Error(err)
 		return domain.User{}, err
 	}
 	return ur.modelToDomain(userModel), nil
@@ -64,6 +70,7 @@ func (ur userRepository) Delete(id uint64) error {
 	sqlCommand := `DELETE FROM users WHERE id=$1`
 	_, err := ur.db.Exec(sqlCommand, id)
 	if err != nil {
+		logger.Logger.Error(err)
 		return err
 	}
 	return nil

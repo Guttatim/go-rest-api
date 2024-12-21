@@ -3,8 +3,10 @@ package repositories
 import (
 	"database/sql"
 	"errors"
-	"github.com/google/uuid"
 	"go-rest-api/internal/domain"
+	"go-rest-api/internal/infra/logger"
+
+	"github.com/google/uuid"
 )
 
 type session struct {
@@ -23,7 +25,9 @@ type sessionRepository struct {
 }
 
 func NewSessionRepository(db *sql.DB) SessionRepository {
-	return &sessionRepository{db: db}
+	return &sessionRepository{
+		db: db,
+	}
 }
 
 func (sr sessionRepository) Save(sess domain.Session) error {
@@ -31,6 +35,7 @@ func (sr sessionRepository) Save(sess domain.Session) error {
 	sqlCommand := `INSERT INTO sessions (uuid, user_id) VALUES ($1, $2)`
 	_, err := sr.db.Exec(sqlCommand, s.UUID, s.UserId)
 	if err != nil {
+		logger.Logger.Error(err)
 		return err
 	}
 	return nil
@@ -41,10 +46,12 @@ func (sr sessionRepository) Exists(sess domain.Session) error {
 	sqlCommand := `SELECT * FROM sessions WHERE uuid = $1 AND user_id = $2`
 	rows, err := sr.db.Query(sqlCommand, s.UUID, sess.UserId)
 	if err != nil {
+		logger.Logger.Error(err)
 		return err
 	}
 	defer rows.Close()
 	if !rows.Next() {
+		logger.Logger.Error("session does not exist")
 		return errors.New("session does not exist")
 	}
 	return nil
@@ -55,6 +62,7 @@ func (sr sessionRepository) Delete(sess domain.Session) error {
 	sqlCommand := `DELETE FROM sessions WHERE uuid = $1 AND user_id = $2`
 	_, err := sr.db.Exec(sqlCommand, s.UUID, sess.UserId)
 	if err != nil {
+		logger.Logger.Error(err)
 		return err
 	}
 	return nil

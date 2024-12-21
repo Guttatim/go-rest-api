@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"go-rest-api/config"
 	"go-rest-api/config/container"
+	"go-rest-api/internal/infra/database"
 	"go-rest-api/internal/infra/http"
+	"go-rest-api/internal/infra/logger"
 	"os"
 	"os/signal"
 	"runtime/debug"
@@ -14,12 +16,14 @@ import (
 func main() {
 	exitCode := 0
 	ctx, cancel := context.WithCancel(context.Background())
+	cfg := config.GetConfiguration()
+	logger.Init(cfg)
 
 	// Recover
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Printf("The system panicked!: %v\n", r)
-			fmt.Printf("Stack trace form panic: %s\n", string(debug.Stack()))
+			logger.Logger.Panic("The system panicked!: %v\n", r)
+			logger.Logger.Panic("Stack trace form panic: %s\n", string(debug.Stack()))
 			exitCode = 1
 		}
 		os.Exit(exitCode)
@@ -30,20 +34,25 @@ func main() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		sig := <-c
-		fmt.Printf("Received signal '%s', stopping... \n", sig.String())
+		logger.Logger.Info("Received signal '%s', stopping... \n", sig.String())
 		cancel()
-		fmt.Printf("Sent cancel to all threads...")
+		logger.Logger.Info("Sent cancel to all threads...")
 	}()
+
+	err := database.Migrate(cfg)
+	if err != nil {
+		logger.Logger.Error("Unable to apply migrations: %q\n", err)
+	}
 
 	cont := container.New()
 
-	err := http.Server(
+	err = http.Server(
 		ctx,
 		http.CreateRouter(cont),
 	)
 
 	if err != nil {
-		fmt.Printf("http server error: %s", err)
+		logger.Logger.Error("http server error: %s", err)
 		exitCode = 2
 		return
 	}
