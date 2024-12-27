@@ -43,7 +43,7 @@ func New() Container {
 	userRepo := repositories.NewUserRepository(db)
 	sessionRepo := repositories.NewSessionRepository(db)
 
-	userService := app.NewUserService(userRepo)
+	userService := app.NewUserService(userRepo, cfg)
 	sessionService := app.NewSessionService(sessionRepo, userService, tknAuth)
 
 	userController := controllers.NewUserController(userService)

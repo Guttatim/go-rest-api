@@ -2,12 +2,13 @@ package http
 
 import (
 	"errors"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
 	"go-rest-api/config/container"
 	"go-rest-api/internal/infra/http/controllers"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 )
 
 func CreateRouter(con container.Container) http.Handler {
@@ -66,6 +67,10 @@ func UserRouter(r chi.Router, uc controllers.UserController) {
 			"/me",
 			uc.FindMe(),
 		)
+		// apiRouter.Get(
+		// 	"/email/confirm/{token}",
+		// 	uc.ConfirmUserEmailByEmailConfirmationToken(),
+		// )
 	})
 }
 

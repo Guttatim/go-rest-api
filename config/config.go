@@ -14,6 +14,10 @@ type Configuration struct {
 	MigrateToVersion    string
 	MigrationLocation   string
 	LoggerLevel         string
+	SmtpHost            string
+	SmtpPort            string
+	WorkGmail           string
+	WorkGmailPassword   string
 	CloudinaryNameKey   string
 	CloudinaryApiKey    string
 	CloudinarySecretKey string
@@ -30,6 +34,10 @@ func GetConfiguration() Configuration {
 		MigrateToVersion:    getOrDefault("MIGRATE", "latest"),
 		MigrationLocation:   getOrDefault("MIGRATION_LOCATION", "migrations"),
 		LoggerLevel:         getOrDefault("LOGGER_LEVEL", "dev"),
+		SmtpHost:            getOrDefault("SMTP_HOST", "smtp.gmail.com"),
+		SmtpPort:            getOrDefault("SMTP_PORT", "587"),
+		WorkGmail:           getOrDefault("WORK_GMAIL", "test@gmail.com"),
+		WorkGmailPassword:   getOrDefault("WORK_GMAIL_PASSWORD", "test_password"),
 		CloudinaryNameKey:   getOrDefault("CLOUDINARY_NAME_KEY", ""),
 		CloudinaryApiKey:    getOrDefault("CLOUDINARY_API_KEY", ""),
 		CloudinarySecretKey: getOrDefault("CLOUDINARY_SECRET_KEY", ""),
